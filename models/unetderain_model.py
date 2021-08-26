@@ -39,7 +39,10 @@ class UnetDerainModel(BaseModel):
         # specify the training losses you want to print out. The program will call base_model.get_current_losses to plot the losses to the console and save them to the disk.
         self.loss_names = ['MSE']
         # specify the images you want to save and display. The program will call base_model.get_current_visuals to save and display these images.
-        self.visual_names = ['Os', 'Bs', 'pred_Bs']
+        if opt.Bt_access:
+            self.visual_names = ['Os', 'Bs', 'pred_Bs']
+        else:
+            self.visual_names = ['Os', 'pred_Bs']
         # specify the models you want to save to the disk. The program will call base_model.save_networks and base_model.load_networks to save and load networks.
         # you can use opt.isTrain to specify different behaviors for training and test. For example, some networks will not be used during test, and you don't need to load them.
         self.model_names = ['UnetDerain']
@@ -65,15 +68,13 @@ class UnetDerainModel(BaseModel):
         if not self.opt.reverse:
             self.Os = input['O_s'].to(self.device)
             self.Bs = input['B_s'].to(self.device)
-            self.Ot = input['O_t'].to(self.device)
-            if self.opt.Bt_access:
-                self.Bt = input['B_t'].to(self.device)
+            # self.Ot = input['O_t'].to(self.device)
+            # if self.opt.Bt_access:
+            #     self.Bt = input['B_t'].to(self.device)
         else:
             self.Os = input['O_t'].to(self.device)
-            self.Bs = input['B_t'].to(self.device)
-            self.Ot = input['O_s'].to(self.device)
             if self.opt.Bt_access:
-                self.Bt = input['B_s'].to(self.device)
+                self.Bs = input['B_t'].to(self.device)
 
         self.image_paths = input['path']  # for test
 

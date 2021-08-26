@@ -2,3 +2,12 @@
 trainList.py
 checkpoints
 results
+options/__pycache__/
+
+util/__pycache__/
+
+models/__pycache__/
+
+.idea/
+
+*.pyc

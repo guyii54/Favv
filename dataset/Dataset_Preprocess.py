@@ -29,10 +29,11 @@ def dataSetCrops(dataroot, saveroot):
             print(save_name)
             cv2.imwrite(save_name, patch)
 
-def select(dataroot):
-    save_dir = r'G:\Dataset\PAMIRain\ALL\selected_patches\clean'
-    checkpoints = r'G:\Dataset\PAMIRain\ALL\selected_patches\clean\check.txt'
-    img_list_file = r'G:\Dataset\PAMIRain\ALL\patches\clean_img_list.npy'
+def select(dataroot, save_dir):
+    checkpoints = r'G:\Dataset\PAMIRain\ALL\selected_patches\rainbuilding\check.txt'
+    img_list_file = r'G:\Dataset\PAMIRain\ALL\patches\rbuilding_img_list.npy'
+    checkfile = r'p_DSC03929_019.JPG'
+
     # dataroot = r'G:\Dataset\PAMIRain\ALL\rainbuilding'
     if not os.path.exists(img_list_file):
         img_list = os.listdir(dataroot)
@@ -42,7 +43,16 @@ def select(dataroot):
     os.makedirs(save_dir, exist_ok=True)
     img_list = np.load(img_list_file,allow_pickle=True)
 
-    for name in img_list:
+    index = 0
+    while img_list[index] != checkfile:
+        print(index)
+        index += 1
+        continue
+    print(index)
+    index += 1
+
+    for i in range(index, len(img_list)):
+        name = img_list[i]
         img = cv2.imread(join(dataroot,name))
         cv2.imshow('img',img)
         key = cv2.waitKey()
@@ -63,19 +73,44 @@ def selectNoSelect():
         if not os.path.exists(sec_name):
             shutil.copy(join(oneDir, name), join(saveDir,name))
 
+def randomChooseTest():
+    import random as r
+    train_dir = r'G:\Dataset\PAMIRain\Dataset825\train\Ot'
+    test_dir = r'G:\Dataset\PAMIRain\Dataset825\test\Ot'
+    choose_num = 200
+
+    img_list = os.listdir(train_dir)
+    r.shuffle(img_list)
+    for name in img_list[0:choose_num]:
+        shutil.copy(join(train_dir,name), join(test_dir, name))
+
+def rain100rename():
+    rain100dir = r'G:\Dataset\rain100\rain_data_train_Heavy\train\Os'
+    img_list = os.listdir(rain100dir)
+    for name in img_list:
+        newname = name.replace('x2','')
+        print(newname)
+        shutil.move(join(rain100dir,name),join(rain100dir, newname))
+
 if __name__ == '__main__':
     # ====== crop ============
-    dataroot = r'G:\Dataset\PAMIRain\ALL\cleanscape2'
-    saveroot = r'G:\Dataset\PAMIRain\ALL\patches\cleanscape2'
-    dataSetCrops(dataroot, saveroot)
+    # dataroot = r'G:\Dataset\PAMIRain\ALL\cleanscape2'
+    # saveroot = r'G:\Dataset\PAMIRain\ALL\patches\cleanscape2'
+    # dataSetCrops(dataroot, saveroot)
 
 
     #======= select ==========
-    # dataroot = r'G:\Dataset\PAMIRain\ALL\patches\cleanscape'
-    # # saveroot = r'G:\Dataset\PAMIRain\ALL\patches\rainbuilding'
+    # dataroot = r'G:\Dataset\PAMIRain\ALL\patches\rainbuilding'
+    # saveroot = r'G:\Dataset\PAMIRain\ALL\selected_patches\rainbuilding'
     # # os.makedirs(saveroot, exist_ok=True)
     # # dataSetCrops(dataroot,saveroot)
-    # select(dataroot)
+    # select(dataroot, saveroot)
 
     # =======select No Select =========
     # selectNoSelect()
+
+    # ======random choose ===========
+    # randomChooseTest()
+
+    # ====rename rain100H ===========
+    rain100rename()

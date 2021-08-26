@@ -14,18 +14,22 @@ def seq2avi():
         writer.write(img)
 
 def avi2seq():
-    seq_dir = r'G:\Dataset\PAMIRain\Dataset824\train\Os'
-    raw_dir = r'G:\Dataset\PAMIRain\Dataset824\train\Bs'
-    avi_dir = r'G:\Dataset\PAMIRain\Dataset824\train\output.avi'
+    import shutil
+    from os.path import join
+    seq_dir = r'G:\Dataset\PAMIRain\Dataset825\train\Os'
+    raw_dir = r'G:\Dataset\PAMIRain\Dataset825\train\Bs'
+    avi_dir = r'G:\Dataset\PAMIRain\Dataset825\big.avi'
 
     raw_img_list = os.listdir(raw_dir)
     reader = cv2.VideoCapture(avi_dir)
 
     index = 0
     while True:
-        ret, img = reader.read()
-        save_name = os.path.join(seq_dir, raw_img_list[index])
-        cv2.imwrite(save_name, img)
+        # ret, img = reader.read()
+        shutil.copy(join(raw_dir, raw_img_list[index]), join(raw_dir, 'middle_'+raw_img_list[index]))
+        shutil.copy(join(raw_dir, raw_img_list[index]), join(raw_dir, 'small_'+raw_img_list[index]))
+        # save_name = os.path.join(seq_dir, 'big_'+raw_img_list[index])
+        # cv2.imwrite(save_name, img)
         index += 1
 
 if __name__ == '__main__':

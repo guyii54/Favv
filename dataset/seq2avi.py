@@ -2,8 +2,8 @@ import cv2
 import os
 
 def seq2avi():
-    seq_dir = r'G:\Dataset\PAMIRain\Dataset824\train\Bs'
-    avi_dir = r'G:\Dataset\PAMIRain\Dataset824\train\testwrite.avi'
+    seq_dir = r'G:\Dataset\PAMIRain\Dataset831\train\Bs'
+    avi_dir = r'G:\Dataset\PAMIRain\Dataset831\train\Bs.avi'
     img_list = os.listdir(seq_dir)
 
     fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
@@ -16,20 +16,25 @@ def seq2avi():
 def avi2seq():
     import shutil
     from os.path import join
-    seq_dir = r'G:\Dataset\PAMIRain\Dataset825\train\Os'
-    raw_dir = r'G:\Dataset\PAMIRain\Dataset825\train\Bs'
-    avi_dir = r'G:\Dataset\PAMIRain\Dataset825\big.avi'
+    import fnmatch
+    seq_dir = r'G:\Dataset\PAMIRain\Dataset831\train\Os'
+    raw_dir = r'G:\Dataset\PAMIRain\Dataset831\train\Bs'
+    avi_dir = r'G:\Dataset\PAMIRain\Dataset831\train\middle.avi'
 
     raw_img_list = os.listdir(raw_dir)
+    # name_list = fnmatch.filter(raw_img_list, 'big_*')
+
     reader = cv2.VideoCapture(avi_dir)
 
     index = 0
     while True:
         # ret, img = reader.read()
-        shutil.copy(join(raw_dir, raw_img_list[index]), join(raw_dir, 'middle_'+raw_img_list[index]))
-        shutil.copy(join(raw_dir, raw_img_list[index]), join(raw_dir, 'small_'+raw_img_list[index]))
-        # save_name = os.path.join(seq_dir, 'big_'+raw_img_list[index])
+        # save_name = os.path.join(seq_dir, 'middle_'+raw_img_list[index])
         # cv2.imwrite(save_name, img)
+
+        shutil.copy(join(raw_dir, raw_img_list[index]), join(raw_dir, 'middle_' + raw_img_list[index]))
+        shutil.copy(join(raw_dir, raw_img_list[index]), join(raw_dir, 'small_' + raw_img_list[index]))
+        shutil.copy(join(raw_dir, raw_img_list[index]), join(raw_dir, 'big_' + raw_img_list[index]))
         index += 1
 
 if __name__ == '__main__':

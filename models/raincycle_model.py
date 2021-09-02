@@ -14,6 +14,8 @@ from . import networks
 import itertools
 from util.image_pool import ImagePool
 import os
+from torchvision.models.vgg import vgg16
+from torch import nn
 
 
 # current train strategy: fix G1 and train G2, G3, G4 initial G3 with G1. data: 2020.9.18
@@ -64,15 +66,22 @@ class RainCycleModel(BaseModel):
         # specify the models you want to save to the disk. The program will call base_model.save_networks and base_model.load_networks to save and load networks.
         self.model_names = ['G1', 'G2', 'G3', 'G4', 'D_B', 'D_Os', 'D_Ot']
 
-
+        self.vgg = vgg16(pretrained=True)
+        self.loss_network = nn.Sequential(*list(self.vgg.features)[0:31]).eval()
+        for param in self.loss_network.parameters():
+            param.requires_grad = False
+        self.loss_network = torch.nn.DataParallel(self.loss_network, self.gpu_ids)
         # netG1 for synthetic rain removal
         # netG2 for real rain generation
         # netG3 for real rain removal
         # netG4 for synthetic rain generation
         self.netG2 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, gpu_ids=self.gpu_ids)
         self.netG4 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, gpu_ids=self.gpu_ids)
-        self.netG1 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, 'unet_128', gpu_ids=self.gpu_ids)
-        self.netG3 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, 'unet_128', gpu_ids=self.gpu_ids)
+        # self.netG1 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, 'unet_128', gpu_ids=self.gpu_ids)
+        # self.netG3 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, 'unet_128', gpu_ids=self.gpu_ids)
+
+        self.netG1 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, gpu_ids=self.gpu_ids)
+        self.netG3 = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, gpu_ids=self.gpu_ids)
 
 
         self.netD_Ot = networks.define_D(opt.output_nc, opt.ndf, opt.netD,opt.n_layers_D, opt.norm, opt.init_type, opt.init_gain, self.gpu_ids)
@@ -84,7 +93,8 @@ class RainCycleModel(BaseModel):
 
         if self.isTrain:  # only defined during training time
             if self.opt.init_derain != '0':
-                load_filename = 'latest_net_UnetDerain.pth'
+                # load_filename = 'latest_net_UnetDerain.pth'
+                load_filename = 'latest_net_ResDerain.pth'
                 if self.opt.unet_load_path == None:
                     print('FileNotFoundError: PreTrained_load_path is not found!')
                     raise FileNotFoundError
@@ -214,6 +224,21 @@ class RainCycleModel(BaseModel):
         self.MSE_pred_Bs = self.criterion_MSE(self.pred_Bs, self.Bs)
         self.MSE_pred_pred_Bs = self.criterion_MSE(self.pred_pred_Bs, self.Bs)
         self.loss_MSE = self.MSE_pred_Bs + self.MSE_pred_pred_Bs
+
+        # Contra Loss
+        # feat_Os = self.loss_network(self.Os)
+        # feat_pred_Bs = self.loss_network(self.pred_Bs)
+        # feat_pred_Ot = self.loss_network(self.pred_Ot)
+        # feat_pred_pred_Bs = self.loss_network(self.pred_pred_Bs)
+        # feat_pred_pred_Os = self.loss_network(self.pred_pred_Os)
+        #
+        # feat_Ot = self.loss_network(self.Ot)
+        # feat_pred_Bt = self.loss_network(self.pred_Bt)
+        # feat_pred_Os = self.loss_network(self.pred_Os)
+        # feat_pred_pred_Bt = self.loss_network(self.pred_pred_Bt)
+        # feat_pred_pred_Ot = self.loss_network(self.pred_pred_Ot)
+
+
 
         self.loss_G_total = lambda_MSE * self.loss_MSE +  lambda_GAN * self.loss_GAN + lambda_Cycle * self.loss_Cycle
         self.loss_G_total.backward()

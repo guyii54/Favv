@@ -75,14 +75,20 @@ def selectNoSelect():
 
 def randomChooseTest():
     import random as r
-    train_dir = r'G:\Dataset\PAMIRain\Dataset825\train\Ot'
-    test_dir = r'G:\Dataset\PAMIRain\Dataset825\test\Ot'
+    train_dir = r'G:\Dataset\PAMIRain\Dataset831\train\Os'
+    test_dir = r'G:\Dataset\PAMIRain\Dataset831\test\Os'
+
+    Bs_dir = r'G:\Dataset\PAMIRain\Dataset831\train\Bs'
+    Bs_test_dir = r'G:\Dataset\PAMIRain\Dataset831\test\Bs'
     choose_num = 200
 
     img_list = os.listdir(train_dir)
     r.shuffle(img_list)
     for name in img_list[0:choose_num]:
+        # shutil.copy(join(train_dir,name), join(test_dir, name))
+
         shutil.copy(join(train_dir,name), join(test_dir, name))
+        shutil.copy(join(Bs_dir,name), join(Bs_test_dir, name))
 
 def rain100rename():
     rain100dir = r'G:\Dataset\rain100\rain_data_train_Heavy\train\Os'
@@ -91,6 +97,52 @@ def rain100rename():
         newname = name.replace('x2','')
         print(newname)
         shutil.move(join(rain100dir,name),join(rain100dir, newname))
+
+def resize(downsample=2):
+    train_dir = r'G:\Dataset\PAMIRain\ALL\rainbuilding'
+    save_dir = r'G:\Dataset\PAMIRain\ALL\resizes\rainbuilding\1200x2120'
+    img_list = os.listdir(train_dir)
+
+    #show res
+    for name in img_list:
+        img = cv2.imread(join(train_dir, name))
+        img_r = cv2.resize(img, dsize=(0,0), fx=1/downsample, fy=1/downsample)
+        cv2.imwrite(join(save_dir,name), img_r)
+        # print(img.shape)
+        # print(img_r.shape)
+
+def resize_crop(crop_size=256):
+    dataroot = r'G:\Dataset\PAMIRain\ALL\resizes\rainbuilding\1200x2120'
+    saveroot = r'G:\Dataset\PAMIRain\ALL\resizes\rainbuilding\1200x2120crop256'
+    window_size = 256
+    stride = 256
+
+    img_list = os.listdir(dataroot)
+    count = 0
+    for img_name in img_list:
+        img = cv2.imread(join(dataroot, img_name))
+        patches = getWindows(img, window_size, stride)
+        for index, patch in enumerate(patches):
+            save_name = join(saveroot, 'p_'+img_name.replace('.JPG','')+'_%03d'%index + '.JPG')
+            print(save_name, count)
+            count += 1
+            # cv2.imwrite(save_name, patch)
+
+def crop_resize(cropsize=512,tosize=256,stride=512):
+    dataroot = r'G:\Dataset\PAMIRain\ALL\cleanscape2'
+    saveroot = r'G:\Dataset\PAMIRain\ALL\resizes\clean\crop512resize256'
+    os.makedirs(saveroot, exist_ok=True)
+    img_list = os.listdir(dataroot)
+    count = 0
+    for img_name in img_list:
+        img = cv2.imread(join(dataroot, img_name))
+        patches = getWindows(img, cropsize, stride)
+        for index, patch in enumerate(patches):
+            save_name = join(saveroot, 'p_' + img_name.replace('.JPG', '') + '_%03d' % index + '.JPG')
+            print(save_name,count)
+            count += 1
+            patch = cv2.resize(patch, (tosize,tosize))
+            cv2.imwrite(save_name, patch)
 
 if __name__ == '__main__':
     # ====== crop ============
@@ -110,7 +162,12 @@ if __name__ == '__main__':
     # selectNoSelect()
 
     # ======random choose ===========
-    # randomChooseTest()
+    randomChooseTest()
 
     # ====rename rain100H ===========
-    rain100rename()
+    # rain100rename()
+
+    #===== resize =============
+    # resize(downsample=2)
+    # resize_crop(crop_size=256)
+    # crop_resize()
